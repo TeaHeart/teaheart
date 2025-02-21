@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/spring_template
+    username: root
+    password: root
+  jackson:
+    default-property-inclusion: non_null
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  mapper-default-scope: org.example.mapper
+  type-aliases-package: org.example.entity
+  mapper-locations: classpath*:/org/example/mapper/xml/*.xml
+  global-config:
+    db-config:
+      id-type: auto
