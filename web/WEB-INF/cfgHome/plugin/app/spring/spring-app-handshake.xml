@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans default-autowire="byName">
+    <bean id="appSSOLoginContext" class="com.seeyon.ctp.portal.sso.SSOLoginContext">
+        <property name="name" value="app"/>
+        <property name="forward" value="true"/>
+        <property name="ticketName" value="ticket"/>
+        <property name="handshake">
+            <bean class="com.seeyon.apps.app.handshake.AppSSOLoginHandshakeImpl">
+                <property name="url" value="http://localhost:3000/api/sso/checkTicket"/>
+                <property name="logoutUrl" value="http://localhost:3000/api/sso/logout"/>
+            </bean>
+        </property>
+    </bean>
+</beans>
