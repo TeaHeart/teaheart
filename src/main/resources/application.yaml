@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql:///spring
+    username: root
+    password: root
+  jackson:
+    default-property-inclusion: NON_NULL
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  mapper-default-scope: org.example.mapper
+  type-aliases-package: org.example.entity
+  mapper-locations: classpath*:/org/example/mapper/xml/*.xml
+  global-config:
+    db-config:
+      id-type: auto
+mqtt:
+  uri:
+    - tcp://localhost:1883
+  client-id: "mqtt"
+  username:
+  password:
