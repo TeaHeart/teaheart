@@ -13,6 +13,8 @@ import HelloWorld from './components/HelloWorld.vue'
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
+        <RouterLink to="/p2pbind">P2P绑定</RouterLink>
+        <RouterLink to="/sso">单点登录</RouterLink>
       </nav>
     </div>
   </header>
