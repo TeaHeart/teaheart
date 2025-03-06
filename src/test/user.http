@@ -1,0 +1,29 @@
+@url = http://localhost:3000
+@id = 0
+### 创建用户
+POST {{url}}/api/user
+Content-Type: application/json
+
+{
+    "username": "sa",
+    "password": "sa"
+}
+
+### 删除用户
+DELETE {{url}}/api/user/{{id}}
+
+### 更新用户信息
+PUT {{url}}/api/user/{{id}}
+Content-Type: application/json
+
+{
+    "username": "a",
+    "password": "a"
+}
+
+### 获取用户列表
+# @name userList
+GET {{url}}/api/user/
+
+### 获取单个用户
+GET {{url}}/api/user/{{id}}
