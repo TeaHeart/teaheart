@@ -8,6 +8,9 @@ import mongoose from 'mongoose'
 import { logger, authentication, errorHandler } from './utils/middleware.js'
 import authRouter from './routes/auth.js'
 import userRouter from './routes/user.js'
+import ssoRouter from './routes/sso.js'
+import messageRouter from './routes/message.js'
+import pendingRouter from './routes/pending.js'
 
 const app = express()
 
@@ -26,8 +29,11 @@ app.use(
 
 app.use('/api', logger)
 app.use('/api/auth', authRouter)
+app.use('/api/sso', ssoRouter)
 app.use('/api', authentication)
 app.use('/api/user', userRouter)
+app.use('/api/message', messageRouter)
+app.use('/api/pending', pendingRouter)
 app.use(errorHandler)
 
 ViteExpress.listen(app, process.env.VITE_PORT, () => {

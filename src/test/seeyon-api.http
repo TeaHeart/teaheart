@@ -1,0 +1,114 @@
+### docs => https://open.seeyoncloud.com/v5devCIP/250/
+@host = http://localhost:8008
+
+### 获取 restToken
+# @name restToken
+POST {{host}}/seeyon/rest/token
+Content-Type: application/json
+  
+{
+  "userName": "rest",
+  "password": "87b0ef13-f0a3-4ae1-826c-a29bd488b540"
+}
+
+###
+@token = token={{restToken.response.body.id}}
+###
+### 单点登录 url
+POST {{host}}/seeyon/login/sso?from=app&ticket=
+
+### oa 校验 ticket url
+POST {{host}}/seeyon/thirdpartyController.do?ticket=
+Content-Type: application/json
+
+### 绑定单个用户
+POST {{host}}/seeyon/rest/thirdpartyUserMapper/binding/singleUser?{{token}}
+Content-Type: application/json
+
+{
+  "registerCode": "3001",
+  "thirdUserId": "67d003c6cf8f219f430ad0ca",
+  "thirdLoginName": "user",
+  "thirdName": null,
+  "thirdCode": null,
+  "thirdMobile":null,
+  "thirdEmail":null,
+  "param0":null,
+  "param1": null
+} 
+
+### 绑定多个用户
+POST {{host}}/seeyon/rest/thirdparyUserMapper/binding?{{token}}
+Content-Type: application/json
+
+{
+  "userlist": []
+}
+
+### 发送单个消息
+POST {{host}}/seeyon/rest/thirdpartyMessage/receive/singleMessage?{{token}}
+Content-Type: application/json
+
+{
+  "thirdpartyRegisterCode": "注册系统编码",
+  "thirdpartyMessageId": "第三方系统消息主键",
+  "messageContent": "消息内容",
+  "thirdpartySenderId": "第三方系统发送者主键（点对点绑定使用）",
+  "thirdpartyReceiverId": "第三方系统接收人主键（点对点绑定使用）",
+  "creation_date": "消息创建日期，格式yyyy-MM-dd HH:mm",
+  "downloadUrl": "原生app的下载地址",
+  "messageH5URL": "H5穿透地址",
+  "messageURL": "PC穿透地址",
+  "noneBindingSender": "登录名称/人员编码/手机号/电子邮件（免绑定使用）",
+  "noneBindingReceiver": "登录名称/人员编码/手机号/电子邮件（免绑定使用）"
+}
+
+### 发送多个消息
+POST {{host}}/seeyon/rest/thirdpartyMessage/receive/messageList?{{token}}
+Content-Type: application/json
+
+{
+   "messages": []
+}
+
+### 发送单个代办
+
+POST {{host}}/seeyon/rest/thirdpartyPending/receive?{{token}}
+Content-Type: application/json
+
+{
+  "registerCode": "注册系统编码",
+  "taskId": "第三方系统待办主键",
+  "title": "待办标题",
+  "senderName": "待办发起人姓名",
+  "classify": "类别",
+  "contentType": "内容类型",
+  "state": "状态0待办，1已办",
+  "thirdSenderId": "第三方系统发送者主键",
+  "thirdReceiverId": "第三方系统接收人主键",
+  "creationDate": "待办发起日期，格式yyyy-MM-dd HH:mm",
+  "content": "原生app的下载地址",
+  "h5url": "H5穿透地址",
+  "url": "PC穿透地址",
+  "noneBindingSender":"登录名称/人员编码/手机号/电子邮件",
+  "noneBindingReceiver":"登录名称/人员编码/手机号/电子邮件"
+}
+
+### 发送多个代办
+POST {{host}}/seeyon/rest/thirdpartyPending/receive/pendings?{{token}}
+Content-Type: application/json
+
+{
+  "pendingList": []
+}
+
+### 更新单个代办
+POST {{host}}/seeyon/rest/thirdpartyPending/updatePendingState?{{token}}
+Content-Type: application/json
+
+{
+  "registerCode": "注册系统编码",
+  "taskId": "第三方系统待办主键",
+  "state": "状态0待办，1已办",
+  "subState": "处理后状态 0/1/2/3 同意/不同意/取消/驳回"
+}

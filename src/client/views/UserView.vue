@@ -47,6 +47,9 @@
           <el-form-item label="password">
             <el-input type="password" v-model="user.password" />
           </el-form-item>
+          <el-form-item label="oaLoginName">
+            <el-input disabled v-model="user.oaLoginName" />
+          </el-form-item>
         </el-form>
         <template #footer>
           <div class="dialog-footer">
@@ -79,6 +82,7 @@ const user = ref({
   _id: null,
   username: null,
   password: null,
+  oaLoginName: null,
 })
 const userList = ref([])
 const dialogVisible = ref(false)

@@ -13,6 +13,8 @@ import { RouterLink, RouterView } from 'vue-router'
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/auth">Auth</RouterLink>
         <RouterLink to="/user">User</RouterLink>
+        <RouterLink to="/message">Message</RouterLink>
+        <RouterLink to="/pending">Pending</RouterLink>
       </nav>
     </div>
   </header>

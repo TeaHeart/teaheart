@@ -24,6 +24,28 @@ const router = createRouter({
         },
       ],
     },
+    {
+      path: '/message',
+      name: 'message',
+      component: () => import('../views/MessageView.vue'),
+      children: [
+        {
+          path: ':id',
+          component: () => import('../views/MessageView.vue'),
+        },
+      ],
+    },
+    {
+      path: '/pending',
+      name: 'pending',
+      component: () => import('../views/PendingView.vue'),
+      children: [
+        {
+          path: ':id',
+          component: () => import('../views/PendingView.vue'),
+        },
+      ],
+    },
   ],
 })
 
