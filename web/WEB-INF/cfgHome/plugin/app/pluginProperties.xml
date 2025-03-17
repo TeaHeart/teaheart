@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ctpConfig>
+    <app>
+        <!-- AppContext.getSystemProperty("app.rest-server") -->
+        <rest-server>http://localhost:8008</rest-server>
+    </app>
+</ctpConfig>
