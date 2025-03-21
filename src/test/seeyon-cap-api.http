@@ -1,0 +1,114 @@
+@host = http://localhost:8008
+
+### 获取 restToken
+# @name restToken
+POST {{host}}/seeyon/rest/token
+Content-Type: application/json
+  
+{
+  "userName": "rest",
+  "password": "dbf2f067-b1ef-4035-ad42-ac008b44cf5f"
+}
+
+###
+@token = token={{restToken.response.body.id}}
+@templateCode = "cwgs_form_001"
+@rightId = "-6521047405538817644.384342488908451127"
+@loginName = "user"
+
+### 无流程批量导出数据
+POST {{host}}/seeyon/rest/cap4/form/soap/export?{{token}}
+Content-Type: application/json
+
+{
+    "templateCode": {{templateCode}},
+    "beginDateTime": "2000-01-01",
+    "endDateTime": "2030-01-01",
+    "rightId": {{rightId}}
+}
+
+### 无流程的批量添加
+POST {{host}}/seeyon/rest/cap4/form/soap/batch-add?{{token}}
+Content-Type: application/json
+
+{
+    "formCode": {{templateCode}},
+    "loginName": {{loginName}},
+    "rightId": {{rightId}},
+    "doTrigger": true,
+    "uniqueFiled": ["field0001"],
+    "dataList": [
+        {
+            "masterTable":{
+                "name":"formmain_0023",
+                "record":{
+                    "id":1,
+                    "fields":[
+                        {
+                            "name":"field0001",
+                            "value":"1742450588052",
+                            "showValue":""
+                        },
+                        {
+                            "name":"field0003",
+                            "value":"2025-03-19",
+                            "showValue":""
+                        }
+                    ]
+                },
+                "changedFields": ["field0001","field0003"]
+            },
+            "subTables": [],
+            "attachmentInfos" : []
+        }
+    ]
+}
+
+### 无流程的批量删除
+DELETE {{host}}/seeyon/rest/cap4/form/soap/batch-delete?{{token}}
+Content-Type: application/json
+
+{
+  "formCode": {{templateCode}},
+  "loginName": {{loginName}},
+  "idList":[
+    7687388369263739306
+  ]
+}
+
+### 
+POST {{host}}/seeyon/rest/cap4/form/soap/batch-update?{{token}}
+Content-Type: application/json
+
+{
+    "formCode": {{templateCode}},
+    "loginName": {{loginName}},
+    "rightId": {{rightId}},
+    "doTrigger": true,
+    "uniqueFiled": ["field0001"],
+    "dataList": [
+        {
+            "masterTable":{
+                "name":"formmain_0023",
+                "record":{
+                    "id":1,
+                    "fields":[
+                        {
+                            "name":"field0001",
+                            "value":"1742450588052",
+                            "showValue":""
+                        },
+                        {
+                            "name":"field0003",
+                            "value":"2025-03-20",
+                            "showValue":""
+                        }
+                    ]
+                },
+                "changedFields": ["field0003"]
+            },
+            "subTables": [],
+            "attachmentInfos" : []
+        }
+    ]
+}
