@@ -1,6 +1,6 @@
 import request from '../utils/request.js'
 
-const prefix = '/api/user'
+const prefix = '/user'
 
 function add(user) {
   return request({

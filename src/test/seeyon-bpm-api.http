@@ -1,0 +1,362 @@
+
+### 获取 token
+# @name RestToken
+POST {{url}}/seeyon/rest/token
+Content-Type: application/json;charset=UTF-8
+Accept: application/json;charset=UTF-8
+
+{
+  "userName": "{{userName}}",
+  "password": "{{password}}",
+  "loginName":"{{loginName}}"
+}
+
+###
+@token = token={{RestToken.response.body.id}}
+@templateCode = cwgs_form_master_001
+@formCode = cwgs_form_001
+
+### 文件上传 @@1
+# @name FileUpload
+POST {{url}}/seeyon/rest/attachment?{{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryXXXXXXXXXXXXXXX
+Accept: application/json;charset=UTF-8
+
+------WebKitFormBoundaryXXXXXXXXXXXXXXX
+Content-Disposition: form-data;name=text;filename=1.txt
+Content-Type: text/plain;charset=UTF-8
+
+< D:/files/1.txt
+------WebKitFormBoundaryXXXXXXXXXXXXXXX--
+
+###
+@fileUrl = {{FileUpload.response.body.atts[0].fileUrl}}
+
+### 发起表单(Html正文)流程 @@2
+# @name StartFlow
+POST {{url}}/seeyon/rest/bpm/process/start?{{token}}
+Content-Type: application/json;charset=UTF-8
+Accept: application/json;charset=UTF-8
+
+{
+  "appName": "collaboration",
+  "data": {
+    "templateCode": "{{templateCode}}",
+    "draft": "0",
+    "attachments": ["{{fileUrl}}"],
+    "relateDoc": null,
+    "subject": "标题 {{$timestamp}}",
+    "data": {
+      "formmain_0019": {
+        "调出银行名称": "aa",
+        "付款方账户号": "bb"
+      },
+      "formson_0020": [
+        {
+          "收款信息-金额": 100
+        }
+      ],
+      "thirdAttachments": [
+      ]
+    }
+  }
+}
+
+###
+@memberId = -1186211624194520416
+@bussinessData = {{StartFlow.response.body.data.app_bussiness_data}}
+@processId = {{StartFlow.response.body.data.processId}}
+# @affairId = {{bussinessData.affairId}}
+# @summaryId = {{bussinessData.summaryId}}
+@affairId = 3771438448203878349
+@summaryId = 4903927461173391868
+@workItemId = {{StartFlow.response.body.data.workitems[0].id}}
+@nodeId = {{StartFlow.response.body.data.workitems[0].nodeId}}
+
+###
+GET {{url}}/seeyon/rest/affairs/pending?apps=1&memberId={{memberId}}&{{token}}
+
+### 旧版发起流程 @@2
+# @name OldStartFlow
+POST {{url}}/seeyon/rest/flow/{{templateCode}}
+Content-Type: application/json;charset=UTF-8
+Accept: application/json;charset=UTF-8
+
+{
+  "transfertype": "json",
+  "subject": "标题 {{$timestamp}}",
+  "senderLoginName": "{{loginName}}",
+  "attachments": [{{fileUrl}}],
+  "data": {
+    "调出银行名称": "aa",
+    "付款方账户号": "bb",
+    "sub": [
+      {
+        "收款信息-金额": 100
+      }
+    ]
+  },
+  "formContentAtt":[
+  ]
+}
+
+###
+@oldSummaryId = {{OldStartFlow.response.body.*}}
+# 7856764773328100933
+### 取得流程正文数据
+GET {{url}}/seeyon/rest/flow/data/{{summaryId}}?exportType=0&exportFormat=json
+Accept: application/json;charset=UTF-8
+
+### 取得流程状态
+GET {{url}}/seeyon/rest/flow/state/{{summaryId}}
+Accept: application/json;charset=UTF-8
+
+### 取得流程状态
+GET {{url}}/seeyon/rest/affairs/track/?memberId={{memberId}}
+
+### 取得流程状态
+POST {{url}}/seeyon/rest/flow/{{templateCode}}?transfertype=json
+
+### 取得指定表单模板已结束的流程ID
+GET {{url}}/seeyon/rest/flow/FromFinish/{{templateCode}}/2025-01-01/2025-12-31
+# Accept: application/json;charset=UTF-8
+
+### 取得表单模板XML信息(V61update)
+GET {{url}}/seeyon/rest/flow/FromTemplate/{{templateCode}}
+Accept: application/xml;charset=UTF-8
+
+### 取得表单模板XML信息(V61update)
+GET {{url}}/seeyon/rest/flow/fromtemplatexml/{{templateCode}}
+# Accept: application/xml;charset=UTF-8
+
+### 取得指定表单HTML信息
+GET {{url}}/seeyon/rest/form/export/{{affairId}}/{{memberId}}?{{token}}
+# Accept: application/json;charset=UTF-8
+
+### 根据人员编码获取待办事项(Since:V8.2SP1)
+GET {{url}}/seeyon/rest/affairData/pending/code/{{memberId}}?{{token}}
+Accept: application/json;charset=UTF-8
+
+### 取得指定表单流程当前待办人员信息(Since:V61)
+GET {{url}}/seeyon/rest/flow/dostaff/{{summaryId}}
+Accept: application/json;charset=UTF-8
+
+### 根据SummaryID或AffairID获取表单数据(Since:V61)
+GET {{url}}/seeyon/rest/form/getformdata/{{affairId}}
+Accept: application/json;charset=UTF-8
+
+### 获取指定协同附件列表(Since:V61)
+GET {{url}}/seeyon/rest/coll/attachments/{{summaryId}}/0
+Accept: application/json;charset=UTF-8
+
+### 获取人员有权限模板ID列表(Since:V61)
+GET {{url}}/seeyon/rest/template/templateidlist/{{loginName}}/2
+Accept: application/json;charset=UTF-8
+
+### 协同处理接口 过时接口(Since:V60)
+POST {{url}}/seeyon/rest/affair/finishaffair
+Content-Type: application/json;charset=UTF-8
+Accept: application/json;charset=UTF-8
+
+{
+  "affairId": "{{affairId}}",
+  "memberid" : "{{memberId}}",
+  "comment": "已阅",
+  "attitude": "0"
+}
+
+### 协同终止接口(Since:V60)  @@4
+POST {{url}}/seeyon/rest/affair/stop
+Content-Type: application/json;charset=UTF-8
+Accept: application/json;charset=UTF-8
+
+{
+  "affairId": "{{affairId}}",
+  "member" : "{{loginName}}",
+  "repealComment": "终止"
+}
+
+### 协同撤销接口(Since:V60)
+POST {{url}}/seeyon/rest/affair/cancel
+Content-Type: application/json;charset=UTF-8
+Accept: application/json;charset=UTF-8
+
+{
+  "affairId": "{{affairId}}",
+  "summaryId" : "{{summaryId}}",
+  "member": "撤销"
+}
+
+
+### 协同终止接口 @@4 OK
+POST {{url}}/seeyon/rest/bpm/process/stop?{{token}}
+Content-Type: application/json;charset=UTF-8
+Accept: application/json;charset=UTF-8
+
+{
+  "appName": "collaboration",
+  "workitemId": "{{workItemId}}",
+  "data": {
+    "stopOpinion": "终止"
+  }
+}
+
+### 协同撤销接口(Since:6.1SP1) @@3 OK?
+POST {{url}}/seeyon/rest/bpm/process/repeal
+Content-Type: application/json;charset=UTF-8
+Accept: application/json;charset=UTF-8
+
+{
+  "appName": "collaboration",
+  "workitemId": "{{workItemId}}",
+  "data": {
+    "stopOpinion" : "撤销意见"
+  }
+}
+
+### 协同处理接口 @@5
+POST {{url}}/seeyon/rest/bpm/workitem/finish?{{token}}
+Content-Type: application/json;charset=UTF-8
+Accept: application/json;charset=UTF-8
+
+{
+  "appName": "collaboration",
+  "workitemId": "{{workItemId}}",
+  "data": {
+    "comment_deal" : {
+      "attitude": "1",
+      "comment": "已阅"
+    }
+  }
+}
+
+### 协同取回接口(Since:V61sp1) @@6
+POST {{url}}/seeyon/rest/bpm/workitem/takeback
+Content-Type: application/json;charset=UTF-8
+Accept: application/json;charset=UTF-8
+
+{
+  "appName": "collaboration",
+  "workitemId": "{{workItemId}}",
+  "data": {
+    "isSaveOpinion" : "true"
+  }
+}
+
+### 协同回退接口(Since:V61sp1) @@7
+POST {{url}}/seeyon/rest/bpm/workitem/stepBack
+Content-Type: application/json;charset=UTF-8
+Accept: application/json;charset=UTF-8
+
+{
+  "appName": "collaboration",
+  "workitemId": "{{workItemId}}",
+  "data": {
+    "isWFTrace": "0",
+    "comment_deal": {
+      "attitude": "1",
+      "content": "回退意见"
+    }
+  }
+}
+
+### 协同指定回退接口(Since:V61sp1)
+POST {{url}}/seeyon/rest/bpm/workitem/specifyback
+Content-Type: application/json;charset=UTF-8
+Accept: application/json;charset=UTF-8
+
+{
+  "appName": "collaboration",
+  "workitemId": "{{workItemId}}",
+  "targetNodeId": "{{nodeId}}",
+  "data": {
+    "isWFTrace": "0",
+    "comment_deal": {
+      "attitude": "1",
+      "content": "指定回退意见"
+    }
+  }
+}
+
+###
+@unitId = 670869647114347
+
+### 流程加签/当前会签/知会/多级会签接口(Since:V7.0)
+POST {{url}}/seeyon/rest/bpm/process/addNode
+Content-Type: application/json;charset=UTF-8
+Accept: application/json;charset=UTF-8
+
+{
+  "appName": "collaboration",
+  "workitemId": "{{workItemId}}",
+  "changeType": "1",
+  "submitType": "1",
+  "data": {
+    "add_node_info": {
+      "userId": ["{{memberId}}"],
+      "node_process_mode": "all",
+      "policyId": "???",
+      "formOperationPolicy": "0",
+      "backToMe": "1",
+      "dealTerm": "2025-12-31 00:00",
+      "remindTime": "3600",
+      "flowType": "2"
+    },
+    "comment_deal": {
+      "attitude": "1",
+      "content": "接口指定回退"
+    }
+  }
+}
+
+### 流程减签接口(Since:V7.0)
+POST {{url}}/seeyon/rest/bpm/process/deleteNode
+Content-Type: application/json;charset=UTF-8
+Accept: application/json;charset=UTF-8
+
+{
+  "appName": "collaboration",
+  "activityIdList": "{{nodeId}}",
+  "workitemId": "{{workItemId}}",
+  "submitType": "1",
+  "data": {
+    "comment_deal": {
+      "attitude": "1",
+      "content": "接口指定回退"
+    }
+  }
+}
+
+### 节点替换接口(Since:V7.0)
+POST {{url}}/seeyon/rest/bpm/process/freeReplaceNode?{{token}}
+Content-Type: application/json;charset=UTF-8
+Accept: application/json;charset=UTF-8
+
+{
+  "appName" : "collaboration",
+  "activityId": "{{nodeId}}",
+  "processId" : "{{processId}}",
+  "caseId" : "-1",    
+  "data":{
+    "userId":"{{member2Id}}"
+  }
+}
+
+###
+@member2Id = 3816330436727292670
+### 转办接口(Since:V7.0)
+POST {{url}}/seeyon/rest/bpm/process/replaceItem
+Content-Type: application/json;charset=UTF-8
+Accept: application/json;charset=UTF-8
+
+{
+  "appName" : "collaboration",
+  "workitemId" : "{{workItemId}}",
+  "nextMemberId" : "{{member2Id}}"
+}
+
+### 获取流程图生成图片接口(Since:V7.0)
+GET {{url}}/seeyon/rest/bpm/process/diagramImg?isRunning=true&processId={{processId}}&workitemId={{workItemId}}&caseId=-1
+
+### 本APP转发
+GET http://localhost:3000/api/bpm/process/diagramImg?isRunning=true&processId={{processId}}&workitemId={{workItemId}}&caseId=-1

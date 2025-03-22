@@ -2,7 +2,7 @@ import axios from 'axios'
 import process from 'process'
 
 const service = axios.create({
-  baseURL: process.env.SEEYON_URL,
+  baseURL: process.env.VITE_SEEYON_URL,
   headers: {
     'Content-Type': 'application/json;charset=UTF-8',
   },
@@ -11,10 +11,11 @@ const service = axios.create({
 function getToken() {
   return axios({
     method: 'post',
-    url: `${process.env.SEEYON_URL}/seeyon/rest/token`,
+    url: `${process.env.VITE_SEEYON_URL}/seeyon/rest/token`,
     data: {
-      userName: process.env.SEEYON_REST_USERNAME,
-      password: process.env.SEEYON_REST_PASSWORD,
+      userName: process.env.VITE_SEEYON_REST_USERNAME,
+      password: process.env.VITE_SEEYON_REST_PASSWORD,
+      loginName: process.env.VITE_SEEYON_REST_LOGINNAME,
     },
     headers: {
       'Content-Type': 'application/json;charset=UTF-8',

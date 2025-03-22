@@ -1,6 +1,6 @@
 import request from '../utils/request.js'
 
-const prefix = '/api/auth'
+const prefix = '/auth'
 
 function register(user) {
   return request({

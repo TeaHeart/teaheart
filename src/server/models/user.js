@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
 
 userSchema.methods.getOABindInfo = function () {
   return {
-    registerCode: process.env.APP_CODE,
+    registerCode: process.env.VITE_APP_CODE,
     thirdUserId: this._id.toString(),
     thirdLoginName: this.oaLoginName,
     thirdName: null,

@@ -28,7 +28,7 @@ const pendingSchema = new mongoose.Schema({
 pendingSchema.methods.getOAPending = function (username) {
   const target = encodeURIComponent(`/#/pending/${this._id.toString()}`)
   return {
-    registerCode: process.env.APP_CODE,
+    registerCode: process.env.VITE_APP_CODE,
     taskId: this._id.toString(),
     title: this.title,
     senderName: username,
@@ -48,7 +48,7 @@ pendingSchema.methods.getOAPending = function (username) {
 
 pendingSchema.methods.getOAUpdatePendingState = function () {
   return {
-    registerCode: process.env.APP_CODE,
+    registerCode: process.env.VITE_APP_CODE,
     taskId: this._id.toString(),
     state: this.state,
     subState: this.subState,

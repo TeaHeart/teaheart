@@ -5,8 +5,7 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: () => import('../views/HomeView.vue'),
+      redirect: '/auth',
     },
     {
       path: '/auth',
@@ -45,6 +44,11 @@ const router = createRouter({
           component: () => import('../views/PendingView.vue'),
         },
       ],
+    },
+    {
+      path: '/bpm',
+      name: 'bpm',
+      component: () => import('../views/BPMView.vue'),
     },
   ],
 })

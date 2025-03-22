@@ -1,6 +1,6 @@
 import request from '../utils/request.js'
 
-const prefix = '/api/message'
+const prefix = '/message'
 
 function add(message) {
   return request({

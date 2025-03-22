@@ -1,102 +1,92 @@
-<script setup name="App">
-import { RouterLink, RouterView } from 'vue-router'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
+  <el-container class="layout-container">
+    <el-aside>
+      <el-scrollbar>
+        <el-menu :router="true" :default-active="$route.path">
+          <el-menu-item index="/auth"> auth </el-menu-item>
+          <el-menu-item index="/user"> user </el-menu-item>
+          <el-menu-item index="/message"> message </el-menu-item>
+          <el-menu-item index="/pending"> pending </el-menu-item>
+          <el-menu-item index="/bpm"> bpm </el-menu-item>
+        </el-menu>
+      </el-scrollbar>
+    </el-aside>
 
-    <div class="wrapper">
-      <h1>Vue App</h1>
+    <el-container>
+      <el-header>
+        <el-row>
+          <el-col :span="4"> {{ title }} </el-col>
+          <el-col :span="16"> seeyon-app </el-col>
+          <el-col :span="2">
+            <el-tag>hi, {{ loginUser.username }}</el-tag>
+          </el-col>
+          <el-col :span="2">
+            <el-tag @click="logout">logout</el-tag>
+          </el-col>
+        </el-row>
+      </el-header>
 
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/auth">Auth</RouterLink>
-        <RouterLink to="/user">User</RouterLink>
-        <RouterLink to="/message">Message</RouterLink>
-        <RouterLink to="/pending">Pending</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+      <el-main>
+        <el-scrollbar>
+          <router-view />
+        </el-scrollbar>
+      </el-main>
+    </el-container>
+  </el-container>
 </template>
 
+<script setup>
+import { computed } from 'vue'
+import { useRoute, RouterView } from 'vue-router'
+import {
+  ElMenu,
+  ElMenuItem,
+  ElScrollbar,
+  ElMain,
+  ElAside,
+  ElContainer,
+  ElHeader,
+  ElTag,
+  ElRow,
+  ElCol,
+} from 'element-plus'
+import { storeToRefs } from 'pinia'
+import useAuthStore from './stores/auth.js'
+
+const route = useRoute()
+const title = computed(() => route.path?.slice(1))
+
+const authStore = useAuthStore()
+const { logout } = authStore
+const { loginUser } = storeToRefs(authStore)
+</script>
+
 <style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+.layout-container {
+  height: 100vh;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+.el-aside {
+  width: 200px;
+  border-right: 1px solid #cfcfcf;
 }
 
-h1 {
-  margin: 1rem;
-  font-weight: 500;
-  font-size: 1.2rem;
-  position: relative;
-  top: -10px;
+.el-menu {
+  border-right: none;
+}
+
+.el-header {
+  padding: 0;
+}
+
+.el-header .el-row {
+  background-color: #409eff;
+  color: white;
   text-align: center;
+  line-height: 60px;
 }
 
-@media (min-width: 1024px) {
-  h1 {
-    text-align: left;
-  }
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+span:hover {
+  cursor: pointer;
 }
 </style>

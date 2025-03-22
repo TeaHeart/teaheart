@@ -137,7 +137,7 @@ router.get('/goto/seeyon', async (req, res, next) => {
     res.json({
       code: 200,
       message: 'ok',
-      data: `${process.env.SEEYON_URL}/seeyon/main.do?method=login&ticket=${ticket}&ssoFrom=${process.env.APP_NAME}`,
+      data: `${process.env.VITE_SEEYON_URL}/seeyon/main.do?method=login&ticket=${ticket}&ssoFrom=${process.env.VITE_APP_NAME}`,
     })
   } catch (e) {
     next(e)
@@ -196,7 +196,7 @@ router.get('/bind/seeyon', async (req, res, next) => {
     res.json({
       code: 200,
       message: 'ok',
-      data: `${process.env.SEEYON_URL}/seeyon/app.do?method=bind&ticket=${ticket}`,
+      data: `${process.env.VITE_SEEYON_URL}/seeyon/app.do?method=bind&ticket=${ticket}`,
     })
   } catch (e) {
     next(e)

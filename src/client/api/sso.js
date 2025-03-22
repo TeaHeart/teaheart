@@ -1,6 +1,6 @@
 import request from '../utils/request.js'
 
-const prefix = '/api/sso'
+const prefix = '/sso'
 
 function gotoSeeyon() {
   return request({

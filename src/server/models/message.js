@@ -24,7 +24,7 @@ const messageSchema = new mongoose.Schema({
 messageSchema.methods.getOAMessage = function () {
   const target = encodeURIComponent(`/#/message/${this._id.toString()}`)
   return {
-    thirdpartyRegisterCode: process.env.APP_CODE,
+    thirdpartyRegisterCode: process.env.VITE_APP_CODE,
     thirdpartyMessageId: this._id.toString(),
     messageContent: this.content,
     creation_date: moment(this.creationDate).format(process.env.VITE_DATE_FORMAT),

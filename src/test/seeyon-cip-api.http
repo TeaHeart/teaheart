@@ -8,7 +8,8 @@ Content-Type: application/json
   
 {
   "userName": "rest",
-  "password": "87b0ef13-f0a3-4ae1-826c-a29bd488b540"
+  "password": "dbf2f067-b1ef-4035-ad42-ac008b44cf5f",
+  "loginName": "user"
 }
 
 ###
