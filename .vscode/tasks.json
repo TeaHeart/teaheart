@@ -1,0 +1,18 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "shell",
+      "label": "Copy to seeyon",
+      "command": "powershell.exe",
+      "args": [
+        "-c",
+        "Copy-Item",
+        "-Recurse",
+        "-Force",
+        "${workspaceFolder}\\seeyon",
+        "D:\\Seeyon\\v5_81_sp2\\ApacheJetspeed\\webapps"
+      ]
+    }
+  ]
+}

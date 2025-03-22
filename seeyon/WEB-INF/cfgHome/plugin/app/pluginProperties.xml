@@ -3,5 +3,8 @@
     <app>
         <!-- AppContext.getSystemProperty("app.rest-server") -->
         <rest-server>http://localhost:8008</rest-server>
+        <rest-userName>rest</rest-userName>
+        <rest-password>dbf2f067-b1ef-4035-ad42-ac008b44cf5f</rest-password>
+        <rest-loginName>user</rest-loginName>
     </app>
 </ctpConfig>

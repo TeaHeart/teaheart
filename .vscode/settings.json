@@ -1,0 +1,10 @@
+{
+  "java.format.settings.url": ".vscode/java-formatter.xml",
+  "java.project.outputPath": "seeyon\\WEB-INF\\classes",
+  "java.project.sourcePaths": ["src"],
+  "java.project.referencedLibraries": [
+    "D:\\Seeyon\\v5_81_sp2\\ApacheJetspeed\\lib\\**\\*.jar",
+    "D:\\Seeyon\\v5_81_sp2\\ApacheJetspeed\\webapps\\seeyon\\WEB-INF\\lib\\**\\*.jar",
+    "${workspaceFolder}\\seeyon\\WEB-INF\\lib\\**\\*.jar"
+  ]
+}
