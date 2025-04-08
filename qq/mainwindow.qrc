@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/close.png</file>
+        <file>img/down.png</file>
+        <file>img/hbc.png</file>
+        <file>img/keyborad.png</file>
+        <file>img/lock.png</file>
+        <file>img/minus.png</file>
+        <file>img/QQ.png</file>
+        <file>img/qrcode.png</file>
+        <file>img/setting.png</file>
+    </qresource>
+</RCC>
