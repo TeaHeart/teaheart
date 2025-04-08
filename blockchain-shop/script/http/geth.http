@@ -1,0 +1,14 @@
+###
+GET localhost:8080/geth
+
+###
+GET localhost:8080/geth/balance?account=0x0000000000000000000000000000000000000001
+
+
+###
+POST localhost:8080/geth
+Content-Type: application/json
+
+{
+  "password": ""
+}

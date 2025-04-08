@@ -1,0 +1,23 @@
+###
+GET localhost:8080/itemInfo
+
+###
+POST localhost:8080/itemInfo
+Content-Type: application/json
+
+{
+  "name": "一箱金币",
+  "description": "使用后获得 1000 金币"
+}
+
+###
+PUT localhost:8080/itemInfo
+Content-Type: application/json
+
+{
+  "id": 3,
+  "description": "使用后获得 750 金币"
+}
+
+###
+DELETE  localhost:8080/itemInfo?id=3

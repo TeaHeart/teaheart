@@ -1,0 +1,73 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ads
+    username: root
+    password: root
+  jackson:
+    default-property-inclusion: non_null
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  mapper-default-scope: org.example.mapper
+  type-aliases-package: org.example.entity
+  mapper-locations: classpath*:/org/example/mapper/xml/*.xml
+  global-config:
+    db-config:
+      id-type: auto
+ads:
+  privilege:
+    farmer:
+      - POST /user/login
+      - POST /user/logout
+      - POST /user/change-password
+      - GET /user/me
+
+      - GET /node
+      - GET /history
+    technician:
+      - POST /user/login
+      - POST /user/logout
+      - POST /user/change-password
+      - GET /user/me
+
+      - GET /node
+      - GET /history
+
+      - GET /policy
+      - POST /policy
+      - PUT /policy
+      - DELETE /policy
+    administrator:
+      - POST /user/login
+      - POST /user/logout
+      - POST /user/change-password
+      - GET /user/me
+
+      - GET /node
+      - GET /history
+
+      - GET /user
+      - POST /user
+      - PUT /user
+      - DELETE /user
+
+      - GET /node
+      - POST /node
+      - PUT /node
+      - DELETE /node
+
+      - GET /history
+      - POST /history
+      - PUT /history
+      - DELETE /history
+
+      - GET /policy
+      - POST /policy
+      - PUT /policy
+      - DELETE /policy
+
+      - GET /system-config
+      - POST /system-config
+      - PUT /system-config
+      - DELETE /system-config

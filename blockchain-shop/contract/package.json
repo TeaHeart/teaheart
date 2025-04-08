@@ -1,0 +1,14 @@
+{
+  "name": "contract",
+  "version": "1.0.0",
+  "main": "",
+  "scripts": {
+    "build": ".\\node_modules\\.bin\\solcjs --bin --abi -v -o .\\build --base-path . .\\src\\Shop.sol"
+  },
+  "author": "github/TeaHeart",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "solc": "^0.8.17"
+  }
+}

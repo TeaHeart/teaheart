@@ -1,0 +1,24 @@
+###
+GET localhost:8080/itemRepository
+
+###
+POST localhost:8080/itemRepository
+Content-Type: application/json
+
+{
+  "accountId": 1,
+  "itemInfoId": 3
+}
+
+###
+PUT localhost:8080/itemRepository
+Content-Type: application/json
+
+{
+  "id": 5,
+  "accountId": 1,
+  "itemInfoId": 2
+}
+
+###
+DELETE localhost:8080/itemRepository?id=5

@@ -1,0 +1,24 @@
+###
+GET localhost:8080/account
+
+###
+POST localhost:8080/account
+Content-Type: application/json
+
+{
+  "username": "wang5",
+  "password": ""
+}
+
+###
+PUT localhost:8080/account
+Content-Type: application/json
+
+{
+  "id": 3,
+  "token": "0x0000000000000000000000000000000000000004"
+}
+
+###
+DELETE localhost:8080/account/?id=3
+

@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!-- TODO 重写前端 -->
+<head>
+    <meta charset="UTF-8">
+    <title>农业调光系统</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+        }
+
+        header {
+            text-align: center;
+            background-color: #4caf50;
+            color: white;
+            padding: 8px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            height: 100%;
+        }
+
+        aside {
+            width: 200px;
+            background-color: #f4f4f4;
+            padding: 8px;
+        }
+
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: start;
+            flex-grow: 1;
+            padding: 8px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 8px;
+            position: relative;
+        }
+
+        a {
+            text-decoration: none;
+            color: #333;
+            display: block;
+            padding: 8px;
+            text-align: center;
+        }
+
+        a:hover,
+        li:hover > a {
+            background-color: #ddd;
+        }
+
+        table {
+            width: 100%;
+            max-width: 1000px;
+            border-collapse: collapse;
+            margin-bottom: 8px;
+        }
+
+        th,
+        td {
+            text-align: center;
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #ddd;
+        }
+
+        tr {
+            height: 50px;
+        }
+
+        select,
+        input[type="text"],
+        input[type="password"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .data-icon {
+            height: 100px;
+            width: 100px;
+        }
+    </style>
+    <script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+</head>
+
+<body>
+<header>
+    <h1>农业调光系统</h1>
+</header>
+<div class="container">
+    <aside>
+        <ul>
+            <li><a href="#" onclick="loadView('me')">个人主页</a></li>
+            <li>
+                <ul>
+                    <li><a href="#" onclick="loadView('summary')">总览</a></li>
+                    <li><a href="#" onclick="loadView('history')">历史数据管理</a></li>
+                    <li><a href="#" onclick="loadView('policy')">策略管理</a></li>
+                    <li><a href="#" onclick="loadView('user')">用户管理</a></li>
+                    <li><a href="#" onclick="loadView('node')">节点管理</a></li>
+                    <li><a href="#" onclick="loadView('systemConfig')">系统配置管理</a></li>
+                </ul>
+            </li>
+        </ul>
+    </aside>
+    <main id="main"></main>
+</div>
+
+<script>
+    "use strict";
+    const mainEle = document.getElementById("main");
+    const viewMap = {
+        me: meView,
+        summary: summaryView,
+        history: historyView,
+        policy: policyView,
+        user: userView,
+        node: nodeView,
+        systemConfig: systemConfigView,
+    };
+    const roleList = [
+        "农民",
+        "技术员",
+        "管理员"
+    ];
+    const nodeTypeList = [
+        "Sensor-A",
+        "Sensor-B",
+        "Sensor-C"
+    ];
+
+    let currView = null;
+    let currUser = null;
+    let chart = null;
+
+    me();
+    loadView("me");
+
+    function loadView(view = currView, ...args) {
+        if (chart !== null) {
+            chart.destroy();
+            chart = null;
+        }
+        viewMap[currView = view](...args);
+    }
+
+    function render(table, url, rowBuilder) {
+        mainEle.style["display"] = "none";
+        mainEle.innerHTML = table;
+        const tableEle = mainEle.querySelector("table");
+        get(url).then(data => {
+            for (const item of data) {
+                tableEle.insertAdjacentHTML("beforeend", rowBuilder(item));
+            }
+            mainEle.style["display"] = "flex";
+        });
+    }
+
+    function roleOptionBuilder(roleList, role) {
+        let sb = "";
+        for (const item of roleList) {
+            sb += `<option value="${item}" ${item === role ? "selected" : ""}>${item}</option>`;
+        }
+        return sb;
+    }
+
+    function nodeAddressOptionBuilder(nodeList, nodeId, filter = item => true) {
+        let sb = "";
+        for (const item of nodeList) {
+            if (filter(item)) {
+                sb += `<option value="${item.id}" ${item.id === nodeId ? "selected" : ""}>${item.address} ${item.description}</option>`;
+            }
+        }
+        return sb;
+    }
+
+    function nodeTypeOptionBuilder(nodeTypeList, type) {
+        let sb = "";
+        for (const item of nodeTypeList) {
+            sb += `<option value="${item}" ${item === type ? "selected" : ""}>${item}</option>`;
+        }
+        return sb;
+    }
+
+    function meView() {
+        mainEle.style["display"] = "none";
+        if (currUser === undefined || currUser === null) {
+            mainEle.innerHTML = `
+                <table>
+                    <tr>
+                        <th>用户名</th>
+                        <td><input type="text" name="username"></td>
+                    </tr>
+                    <tr>
+                        <th>密码</th>
+                        <td><input type="password" name="password"></td>
+                    </tr>
+                    <tr>
+                        <th>操作</th>
+                        <td><a href="#" onclick="login()">登录</a></td>
+                    </tr>
+                </table>`;
+        } else {
+            mainEle.innerHTML = `
+                <table>
+                    <tr>
+                        <td colspan="2"><h2>欢迎, ${currUser.username}</h2></td>
+                    </tr>
+                    <tr>
+                        <th>密码</th>
+                        <td><input type="password" name="password" value="${currUser.password}"></td>
+                    </tr>
+                    <tr>
+                        <th>操作</th>
+                        <td>
+                            <a href="#" onclick="changePassword()">修改密码</a>
+                            <a href="#" onclick="logout()">登出</a>
+                        </td>
+                    </tr>
+                </table>`;
+        }
+        mainEle.style["display"] = "flex";
+    }
+
+    function summaryView() {
+        mainEle.style["display"] = "none";
+        get("/node").then(nodeList => {
+            mainEle.innerHTML = `
+                <table>
+                    <tr>
+                        <th>Sensor-A</th>
+                        <th>Sensor-B</th>
+                        <th hidden="hidden">Sensor-C</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <select name="nodeId">${nodeAddressOptionBuilder(nodeList, undefined, item => item.type === "Sensor-A")}</select>
+                        </td>
+                        <td>
+                            <select name="nodeId">${nodeAddressOptionBuilder(nodeList, undefined, item => item.type === "Sensor-B")}</select>
+                        </td>
+                        <td hidden="hidden">
+                            <select name="nodeId">${nodeAddressOptionBuilder(nodeList, undefined, item => item.type === "Sensor-C")}</select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <img class="data-icon" src="http://hcada.incloudlab.com/vite/image/sensor/illumination_a.gif">
+                        </td>
+                        <td>
+                            <img class="data-icon" id="curtain-img" src="http://hcada.incloudlab.com/vite/image/control/curtain_c.gif">
+                            <img class="data-icon" id="led-img" src="http://hcada.incloudlab.com/vite/image/control/light_c.png">
+                        </td>
+                        <td hidden="hidden"></td>
+                    </tr>
+                    <tr id="current"></tr>
+                    <tr>
+                        <td colspan="3">
+                            <canvas id="history"/>
+                        </td>
+                    </tr>
+                </table>`;
+            mainEle.style["display"] = "flex";
+        });
+    }
+
+    setInterval(() => {
+        if (currUser && currView === "summary") {
+            const parent = mainEle.querySelector("table");
+            const nodeIdArray = Array.from(parent.querySelectorAll("[name='nodeId']"))
+                .map(item => item.value).filter(item => item?.length !== 0);
+
+            get(`/history/summary/${nodeIdArray.join()}`).then(summary => {
+                const sensorA = summary[nodeIdArray[0]];
+                const sensorB = summary[nodeIdArray[1]]?.["D1"]?.[0] ?? 0;
+                const sensorC = summary[nodeIdArray[2]]?.["D1"]?.[0] ?? 0;
+
+                let currentSensorB = Number.parseInt(document.getElementById("sensor-b-data")?.innerText);
+                if ((currentSensorB & 4) !== (sensorB & 4)) {
+                    const curtainImgEle = document.getElementById("curtain-img");
+                    curtainImgEle.src = (sensorB & 4) !== 0
+                        ? "http://hcada.incloudlab.com/vite/image/control/curtain_o.gif"
+                        : "http://hcada.incloudlab.com/vite/image/control/curtain_c.gif";
+                }
+                if ((currentSensorB & 16) !== (sensorB & 16)) {
+                    const ledImgEle = document.getElementById("led-img");
+                    ledImgEle.src = (sensorB & 16) !== 0
+                        ? "http://hcada.incloudlab.com/vite/image/control/light_o.gif"
+                        : "http://hcada.incloudlab.com/vite/image/control/light_c.png";
+                }
+
+                const currentEle = document.getElementById("current");
+
+                const light = sensorA?.["A2"]?.[0] ?? 0;
+                currentEle.innerHTML = `
+                        <td>${light}</td>
+                        <td id="sensor-b-data">${sensorB}</td>
+                        <td hidden="hidden">${sensorC}</td>`;
+
+                if (chart === null) {
+                    chart = new Chart(document.getElementById("history"), {
+                        type: 'line',
+                        data: {
+                            labels: Array.from(Array(20).keys()),
+                            datasets: [{
+                                label: '温度',
+                                data: [],
+                                fill: false,
+                                borderColor: 'rgb(192,75,75)',
+                                tension: 0.1,
+                                hidden: true
+                            }, {
+                                label: '湿度',
+                                data: [],
+                                fill: false,
+                                borderColor: 'rgb(192,139,75)',
+                                tension: 0.1,
+                                hidden: true
+                            }, {
+                                label: '光强',
+                                data: [],
+                                fill: false,
+                                borderColor: 'rgb(242,223,0)',
+                                tension: 0.1
+                            }, {
+                                label: '空气质量',
+                                data: [],
+                                fill: false,
+                                borderColor: 'rgb(13,255,0)',
+                                tension: 0.1,
+                                hidden: true
+                            }, {
+                                label: '大气压力',
+                                data: [],
+                                fill: false,
+                                borderColor: 'rgb(0,174,255)',
+                                tension: 0.1,
+                                hidden: true
+                            }, {
+                                label: '跌倒状态',
+                                data: [],
+                                fill: false,
+                                borderColor: 'rgb(93,52,255)',
+                                tension: 0.1,
+                                hidden: true
+                            }, {
+                                label: '距离',
+                                data: [],
+                                fill: false,
+                                borderColor: 'rgb(209,0,255)',
+                                tension: 0.1,
+                                hidden: true
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    ticks: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    for (const key in sensorA) {
+                        const value = sensorA[key];
+                        if (/A[0-6]/.test(key)) {
+                            chart.data.datasets[Number.parseInt(key[1])].data = value.reverse();
+                        }
+                    }
+                    chart.update();
+                }
+            });
+        }
+    }, 3000);
+
+    function historyView(queryByNodeId = false) {
+        let url = "/history/last";
+        if (queryByNodeId) {
+            const parent = event.target.closest("tr");
+            const nodeId = parent.querySelector("[name='nodeId']").value;
+            if (nodeId.length !== 0) {
+                url = `/history/nodeId/${nodeId}`;
+            }
+        }
+        get("/node").then(nodeList => render(`
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>节点</th>
+                        <th>时间</th>
+                        <th>数据</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr>
+                        <td>#</td>
+                        <td><select name="nodeId"><option/>${nodeAddressOptionBuilder(nodeList)}</select></td>
+                        <td>#</td>
+                        <td>#</td>
+                        <td><a href="#" onclick="loadView('history', true)">搜索</a></td>
+                    </tr>
+                    <tr>
+                        <td>#</td>
+                        <td><select name="nodeId">${nodeAddressOptionBuilder(nodeList)}</select></td>
+                        <td><input type="datetime-local" name="time"></td>
+                        <td><input type="text" name="data"></td>
+                        <td><a href="#" onclick="saveHistory(true)">添加</a></td>
+                    </tr>
+                </table>`,
+            url,
+            history => `
+                <tr>
+                    <td><input type="text" name="id" value="${history.id}" disabled></td>
+                    <td><select name="nodeId">${nodeAddressOptionBuilder(nodeList, history.nodeId)}</select></td>
+                    <td><input type="datetime-local" name="time" value="${history.time}"></td>
+                    <td><input type="text" name="data" value="${history.data}"></td>
+                    <td>
+                        <a href="#" onclick="saveHistory()">保存</a>
+                        <a href="#" onclick="drop('/history/${history.id}')">删除</a>
+                    </td>
+                </tr>`
+        ));
+    }
+
+    function nodeView(queryByAddress = false) {
+        let url = "/node";
+        if (queryByAddress) {
+            const parent = event.target.closest("tr");
+            const address = parent.querySelector("[name='address']").value;
+            if (address.length !== 0) {
+                url = `/node/address/${address}`;
+            }
+        }
+        render(`
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>类型</th>
+                        <th>地址</th>
+                        <th>命令</th>
+                        <th>描述</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr>
+                        <td>#</td>
+                        <td>#</td>
+                        <td><input type="text" name="address"></td>
+                        <td>#</td>
+                        <td>#</td>
+                        <td><a href="#" onclick="loadView('node', true)">搜索</a></td>
+                    </tr>
+                    <tr>
+                        <td>#</td>
+                        <td><select name="type">${nodeTypeOptionBuilder(nodeTypeList)}</select></td>
+                        <td><input type="text" name="address"></td>
+                        <td><input type="text" name="command"></td>
+                        <td><input type="text" name="description"></td>
+                        <td><a href="#" onclick="saveNode(true)">添加</a></td>
+                    </tr>
+                </table>`,
+            url,
+            node => `
+                <tr>
+                    <td><input type="text" name="id" value="${node.id}" disabled></td>
+                    <td><select name="type">${nodeTypeOptionBuilder(nodeTypeList, node.type)}</select></td>
+                    <td><input type="text" name="address" value="${node.address}"></td>
+                    <td><input type="text" name="command" value="${node.command}"></td>
+                    <td><input type="text" name="description" value="${node.description}"></td>
+                    <td>
+                        <a href="#" onclick="saveNode()">保存</a>
+                        <a href="#" onclick="drop('/node/${node.id}')">删除</a>
+                    </td>
+                </tr>`
+        );
+    }
+
+    function policyView(queryByEnabled = false) {
+        let url = "/policy";
+        if (queryByEnabled) {
+            const parent = event.target.closest("tr");
+            const enabled = parent.querySelector("[name='enabled']").value;
+            if (enabled.length !== 0) {
+                url = `/policy/enabled/${enabled}`;
+            }
+        }
+        get("/node").then(nodeList => render(`
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>源节点</th>
+                        <th>目标节点</th>
+                        <th>是否启用</th>
+                        <th>表达式</th>
+                        <th>命令</th>
+                        <th>描述</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr>
+                        <td>#</td>
+                        <td>#</td>
+                        <td>#</td>
+                        <td>
+                            <select name="enabled">
+                                <option></option>
+                                <option value="true">enabled</option>
+                                <option value="false">disabled</option>
+                            </select>
+                        </td>
+                        <td>#</td>
+                        <td>#</td>
+                        <td>#</td>
+                        <td><a href="#" onclick="loadView('policy', true)">搜索</a></td>
+                    </tr>
+                    <tr>
+                        <td>#</td>
+                        <td><select name="sourceId">${nodeAddressOptionBuilder(nodeList)}</select></td>
+                        <td><select name="targetId">${nodeAddressOptionBuilder(nodeList)}</select></td>
+                        <td><input type="checkbox" name="enabled"></td>
+                        <td><input type="text" name="expression"></td>
+                        <td><input type="text" name="command"></td>
+                        <td><input type="text" name="description"></td>
+                        <td><a href="#" onclick="savePolicy(true)">添加</a></td>
+                    </tr>
+                </table>`,
+            url,
+            policy => `
+                <tr>
+                    <td><input type="text" name="id" value="${policy.id}" disabled></td>
+                    <td><select name="sourceId">${nodeAddressOptionBuilder(nodeList, policy.sourceId)}</select></td>
+                    <td><select name="targetId">${nodeAddressOptionBuilder(nodeList, policy.targetId)}</select></td>
+                    <td><input type="checkbox" name="enabled" ${policy.enabled ? "checked" : ""}></td>
+                    <td><input type="text" name="expression" value="${policy.expression}"></td>
+                    <td><input type="text" name="command" value="${policy.command}"></td>
+                    <td><input type="text" name="description" value="${policy.description}"></td>
+                    <td>
+                        <a href="#" onclick="savePolicy()">保存</a>
+                        <a href="#" onclick="drop('/policy/${policy.id}')">删除</a>
+                    </td>
+                </tr>`
+        ));
+    }
+
+    function userView(queryByUsername = false) {
+        let url = "/user";
+        if (queryByUsername) {
+            const parent = event.target.closest("tr");
+            const username = parent.querySelector("[name='username']").value;
+            if (username.length !== 0) {
+                url = `/user/username/${username}`;
+            }
+        }
+        render(`
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>角色</th>
+                        <th>用户名</th>
+                        <th>密码</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr>
+                        <td>#</td>
+                        <td>#</td>
+                        <td><input type="text" name="username"></td>
+                        <td>#</td>
+                        <td><a href="#" onclick="loadView('user', true)">搜索</a></td>
+                    </tr>
+                    <tr>
+                        <td>#</td>
+                        <td><select name="role">${roleOptionBuilder(roleList)}</select></td>
+                        <td><input type="text" name="username"></td>
+                        <td><input type="password" name="password"></td>
+                        <td><a href="#" onclick="saveUser(true)">添加</a></td>
+                    </tr>
+                </table>`,
+            url,
+            user => `
+                <tr>
+                    <td><input type="text" name="id" value="${user.id}" disabled></td>
+                    <td><select name="role">${roleOptionBuilder(roleList, user.role)}</select></td>
+                    <td><input type="text" name="username" value="${user.username}"></td>
+                    <td><input type="password" name="password" value="${user.password}"></td>
+                    <td>
+                        <a href="#" onclick="saveUser()">保存</a>
+                        <a href="#" onclick="drop('/user/${user.id}')">删除</a>
+                    </td>
+                </tr>`
+        );
+    }
+
+    function systemConfigView(queryByKey = false) {
+        let url = "/system-config";
+        if (queryByKey) {
+            const parent = event.target.closest("tr");
+            const key = parent.querySelector("[name='key']").value;
+            if (key.length !== 0) {
+                url = `/system-config/key/${key}`;
+            }
+        }
+        render(`
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>键</th>
+                        <th>值</th>
+                        <th>描述</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr>
+                        <td>#</td>
+                        <td><input type="text" name="key"></td>
+                        <td>#</td>
+                        <td>#</td>
+                        <td><a href="#" onclick="loadView('systemConfig', true)">搜索</a></td>
+                    </tr>
+                    <tr>
+                        <td>#</td>
+                        <td><input type="text" name="key"></td>
+                        <td><input type="text" name="value"></td>
+                        <td><input type="text" name="description"></td>
+                        <td><a href="#" onclick="saveSystemConfig(true)">添加</a></td>
+                    </tr>
+                </table>`,
+            url,
+            systemConfig => `
+                <tr>
+                    <td><input type="text" name="id" value="${systemConfig.id}" disabled></td>
+                    <td><input type="text" name="key" value="${systemConfig.key}"></td>
+                    <td><input type="text" name="value" value="${systemConfig.value}"></td>
+                    <td><input type="text" name="description" value="${systemConfig.description}"></td>
+                    <td>
+                        <a href="#" onclick="saveSystemConfig()">保存</a>
+                        <a href="#" onclick="drop('/system-config/${systemConfig.id}')">删除</a>
+                    </td>
+                </tr>`
+        )
+    }
+
+    function saveHistory(isAdd = false) {
+        const parent = event.target.closest("tr");
+        const id = parent.querySelector("[name='id']")?.value;
+        const nodeId = parent.querySelector("[name='nodeId']").value;
+        const time = parent.querySelector("[name='time']").value;
+        const data = parent.querySelector("[name='data']").value;
+        if (isAdd) {
+            post("/history", {
+                nodeId,
+                time,
+                data,
+            }).then(_ => loadView());
+        } else {
+            put("/history", {
+                id,
+                nodeId,
+                time,
+                data,
+            }).then(_ => loadView());
+        }
+    }
+
+    function savePolicy(isAdd = false) {
+        const parent = event.target.closest("tr");
+        const id = parent.querySelector("[name='id']")?.value;
+        const sourceId = parent.querySelector("[name='sourceId']").value;
+        const targetId = parent.querySelector("[name='targetId']").value;
+        const enabled = parent.querySelector("[name='enabled']").checked;
+        const expression = parent.querySelector("[name='expression']").value;
+        const command = parent.querySelector("[name='command']").value;
+        const description = parent.querySelector("[name='description']").value;
+        if (isAdd) {
+            post("/policy", {
+                sourceId,
+                targetId,
+                enabled,
+                expression,
+                command,
+                description
+            }).then(_ => loadView());
+        } else {
+            put("/policy", {
+                id,
+                sourceId,
+                targetId,
+                enabled,
+                expression,
+                command,
+                description
+            }).then(_ => loadView());
+        }
+    }
+
+    function saveUser(isAdd = false) {
+        const parent = event.target.closest("tr");
+        const id = parent.querySelector("[name='id']")?.value;
+        const role = parent.querySelector("[name='role']").value;
+        const username = parent.querySelector("[name='username']").value;
+        const password = parent.querySelector("[name='password']").value;
+        if (isAdd) {
+            post("/user", {
+                role,
+                username,
+                password,
+            }).then(_ => loadView());
+        } else {
+            put("/user", {
+                id,
+                role,
+                username,
+                password,
+            }).then(_ => loadView());
+        }
+    }
+
+    function saveNode(isAdd = false) {
+        const parent = event.target.closest("tr");
+        const id = parent.querySelector("[name='id']")?.value;
+        const type = parent.querySelector("[name='type']")?.value;
+        const address = parent.querySelector("[name='address']").value;
+        const command = parent.querySelector("[name='command']").value;
+        const description = parent.querySelector("[name='description']").value;
+        if (isAdd) {
+            post("/node", {
+                type,
+                address,
+                command,
+                description,
+            }).then(_ => loadView());
+        } else {
+            put("/node", {
+                id,
+                type,
+                address,
+                command,
+                description,
+            }).then(_ => loadView());
+        }
+    }
+
+    function saveSystemConfig(isAdd = false) {
+        const parent = event.target.closest("tr");
+        const id = parent.querySelector("[name='id']")?.value;
+        const key = parent.querySelector("[name='key']").value;
+        const value = parent.querySelector("[name='value']").value;
+        const description = parent.querySelector("[name='description']").value;
+        if (isAdd) {
+            post("/system-config", {
+                key,
+                value,
+                description
+            }).then(_ => loadView());
+        } else {
+            put("/system-config", {
+                id,
+                key,
+                value,
+                description
+            }).then(_ => loadView());
+        }
+    }
+
+    function drop(url) {
+        del(url).then(_ => loadView());
+    }
+
+    function login() {
+        const parent = event.target.closest("table");
+        const username = parent.querySelector("[name='username']").value;
+        const password = parent.querySelector("[name='password']").value;
+        post("/user/login", {
+            username,
+            password,
+        }).then(data => {
+            currUser = data;
+            loadView();
+        });
+    }
+
+    function logout() {
+        post("/user/logout")
+            .then(_ => {
+                currUser = null;
+                loadView();
+            });
+    }
+
+    function changePassword() {
+        const parent = event.target.closest("table");
+        const password = parent.querySelector("[name='password']").value;
+        post("/user/change-password", {
+            password,
+        }).then(_ => {
+            currUser = null;
+            loadView();
+        });
+    }
+
+    function me() {
+        get("/user/me").then(data => {
+            currUser = data;
+            loadView();
+        });
+    }
+
+    function post(url, data) {
+        return fetchTemplate(url, {
+            method: "POST",
+            headers: {"Content-Type": "application/json; charset=utf-8"},
+            body: JSON.stringify(data),
+        });
+    }
+
+    function del(url) {
+        return fetchTemplate(url, {
+            method: "DELETE",
+        });
+    }
+
+    function put(url, data) {
+        return fetchTemplate(url, {
+            method: "PUT",
+            headers: {"Content-Type": "application/json; charset=utf-8"},
+            body: JSON.stringify(data),
+        });
+    }
+
+    function get(url) {
+        return fetchTemplate(url, {
+            method: "GET",
+        });
+    }
+
+    function fetchTemplate(url, init) {
+        console.log(init.method, url, init.body);
+        return fetch(url, init)
+            .then(response => response.json())
+            .then(json => {
+                console.log(json);
+                if (json.code !== 200) {
+                    alert(json.message);
+                    if (json.code === 401 || json.code === 403) {
+                        loadView('me');
+                    }
+                    throw new Error(json.message);
+                }
+                return json.data;
+            });
+    }
+</script>
+</body>
+
+</html>

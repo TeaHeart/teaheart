@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>库存管理系统</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+        }
+        header {
+            text-align: center;
+            background-color: #4caf50;
+            color: white;
+            padding: 8px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            height: 100%;
+        }
+
+        aside {
+            width: 200px;
+            background-color: #f4f4f4;
+            padding: 8px;
+        }
+
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: start;
+            flex-grow: 1;
+            padding: 8px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 8px;
+            position: relative;
+        }
+
+        a {
+            text-decoration: none;
+            color: #333;
+            display: block;
+            padding: 8px;
+            text-align: center;
+        }
+
+        a:hover,
+        li:hover>a {
+            background-color: #ddd;
+        }
+
+        table {
+            width: 100%;
+            max-width: 1000px;
+            border-collapse: collapse;
+            margin-bottom: 8px;
+        }
+
+        th,
+        td {
+            text-align: center;
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #ddd;
+        }
+
+        tr {
+            height: 50px;
+        }
+
+        select,
+        input[type="text"],
+        input[type="password"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>库存管理系统</h1>
+    </header>
+    <div class="container">
+        <aside>
+            <ul>
+                <li><a href="#" onclick="loadView('me')">主页</a></li>
+                <li>
+                    <ul>
+                        <li><a href="#" onclick="loadView('users')">用户管理</a></li>
+                        <li><a href="#" onclick="loadView('goods')">商品管理</a></li>
+                        <li><a href="#" onclick="loadView('stock')">库存管理</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </aside>
+        <main id="main"></main>
+    </div>
+
+    <script>
+        "use strict";
+        const mainEle = document.getElementById("main");
+        const viewMap = {
+            me: meView,
+            users: usersView,
+            goods: goodsView,
+            stock: stockView,
+        };
+        const privilegeMap = {
+            0x0001: "登录",
+            0x0002: "修改密码",
+
+            0x0010: "添加用户",
+            0x0020: "删除用户",
+            0x0040: "修改用户",
+            0x0080: "查询用户",
+
+            0x0100: "添加商品",
+            0x0200: "删除商品",
+            0x0400: "修改商品",
+            0x0800: "查询商品",
+
+            0x1000: "添加库存",
+            0x2000: "删除库存",
+            0x4000: "修改库存",
+            0x8000: "查询库存",
+        };
+
+        let currView = "me";
+        let currUser = null;
+
+        loadView();
+
+        function loadView(view = currView, ...args) {
+            viewMap[currView = view](...args);
+        }
+
+        function render(table, url, rowBuilder) {
+            mainEle.style["display"] = "none";
+            mainEle.innerHTML = table;
+            const tableEle = mainEle.querySelector("table");
+            get(url).then(data => {
+                for (const item of data) {
+                    tableEle.insertAdjacentHTML("beforeend", rowBuilder(item));
+                }
+                mainEle.style["display"] = "flex";
+            });
+        }
+
+        function usersView(queryByUsername = false) {
+            let url = "/api/users";
+            if (queryByUsername) {
+                const parent = event.target.closest("tr");
+                const username = parent.querySelector("[name='username']").value;
+                if (username.length !== 0) {
+                    url = `/api/users/username/${username}`;
+                }
+            }
+            render(`
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>用户名</th>
+                        <th>密码</th>
+                        <th>权限</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr>
+                        <td>#</td>
+                        <td><input type="text" name="username"></td>
+                        <td>#</td>
+                        <td>#</td>
+                        <td>
+                            <a href="#" onclick="loadView('users', true)">搜索</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>#</td>
+                        <td><input type="text" name="username"></td>
+                        <td><input type="password" name="password"></td>
+                        <td>${userPrivilegeBuilder()}</td>
+                        <td>
+                            <a href="#" onclick="saveUser(true)">添加</a>
+                        </td>
+                    </tr>
+                </table>`,
+                url,
+                user => `
+                <tr>
+                    <td><input type="text" name="id" value="${user.id}" disabled></td>
+                    <td><input type="text" name="username" value="${user.username}"></td>
+                    <td><input type="password" name="password" value="${user.password}"></td>
+                    <td>${userPrivilegeBuilder(user.privilege)}</td>
+                    <td>
+                        <a href="#" onclick="saveUser()">保存</a>
+                        <a href="#" onclick="drop('/api/users/${user.id}')">删除</a>
+                    </td>
+                </tr>`
+            );
+        }
+
+        function goodsView(queryByName = false) {
+            let url = "/api/goods";
+            if (queryByName) {
+                const parent = event.target.closest("tr");
+                const name = parent.querySelector("[name='name']").value;
+                if (name.length !== 0) {
+                    url = `/api/goods/name/${name}`;
+                }
+            }
+            render(`
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>名称</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr>
+                        <td>#</td>
+                        <td><input type="text" name="name"></td>
+                        <td>
+                            <a href="#" onclick="loadView('goods', true)">搜索</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>#</td>
+                        <td><input type="text" name="name"></td>
+                        <td>
+                            <a href="#" onclick="saveGoods(true)">添加</a>
+                        </td>
+                    </tr>
+                </table>`,
+                url,
+                goods => `
+                <tr>
+                    <td><input type="text" name="id" value="${goods.id}" disabled></td>
+                    <td><input type="text" name="name" value="${goods.name}"></td>
+                    <td>
+                        <a href="#" onclick="saveGoods()">保存</a>
+                        <a href="#" onclick="drop('/api/goods/${goods.id}')">删除</a>
+                    </td>
+                </tr>`
+            );
+        }
+
+        function stockView(queryByGid = false) {
+            let url = "/api/stock";
+            if (queryByGid) {
+                const parent = event.target.closest("tr");
+                const gid = parent.querySelector("[name='gid']").value;
+                if (gid.length !== 0) {
+                    url = `/api/stock/gid/${gid}`;
+                }
+            }
+            get("/api/goods")
+                .then(goods => render(`
+                    <table>
+                        <tr>
+                            <th>ID</th>
+                            <th>商品名</th>
+                            <th>价格</th>
+                            <th>数量</th>
+                            <th>操作</th>
+                        </tr>
+                        <tr>
+                            <td>#</td>
+                            <td>${stockGidBuilder(goods)}</td>
+                            <td>#</td>
+                            <td>#</td>
+                            <td>
+                                <a href="#" onclick="loadView('stock', true)">搜索</a>
+                            </td>
+                        </td>
+                        <tr>
+                            <td>#</td>
+                            <td>${stockGidBuilder(goods, 0)}</td>
+                            <td><input type="text" name="price"></td>
+                            <td><input type="text" name="amount"></td>
+                            <td>
+                                <a href="#" onclick="saveStock(true)">添加</a>
+                            </td>
+                        </td>
+                    </table>`,
+                    url,
+                    stock => `
+                    <tr>
+                        <td><input type="text" name="id" value="${stock.id}" disabled></td>
+                        <td>${stockGidBuilder(goods, stock.goods.id)}</td>
+                        <td><input type="text" name="price" value="${stock.price}"></td>
+                        <td><input type="text" name="amount" value="${stock.amount}"></td>
+                        <td>
+                            <a href="#" onclick="saveStock()">保存</a>
+                            <a href="#" onclick="drop('/api/stock/${stock.id}')">删除</a>
+                        </td>
+                    </tr>`
+                ));
+
+        }
+
+        function meView() {
+            mainEle.style["display"] = "none";
+            if (currUser === null) {
+                mainEle.innerHTML = `
+                <table>
+                    <tr>
+                        <th>用户名</th>
+                        <td><input type="text" name="username"></td>
+                    </tr>
+                    <tr>
+                        <th>密码</th>
+                        <td><input type="password" name="password"></td>
+                    </tr>
+                    <tr>
+                        <th>操作</th>
+                        <td><a href="#" onclick="login()">登录</a></td>
+                    </tr>
+                </table>`;
+            } else {
+                mainEle.innerHTML = `
+                <table>
+                    <tr>
+                        <td colspan="2"><h2>欢迎, ${currUser.username}</h2></td>
+                    </tr>
+                    <tr>
+                        <th>密码</th>
+                        <td><input type="password" name="password" value="${currUser.password}"></td>
+                    </tr>
+                    <tr>
+                        <th>操作</th>
+                        <td>
+                            <a href="#" onclick="changePassword()">修改密码</a>
+                            <a href="#" onclick="logout()">登出</a>
+                        </td>
+                    </tr>
+                </table>`;
+            }
+            mainEle.style["display"] = "flex";
+        }
+
+        function getPrivilegeValue(items) {
+            let mask = 0;
+            for (const item of items) {
+                if (item.checked) {
+                    mask |= item.value;
+                }
+            }
+            return mask;
+        }
+
+        function userPrivilegeBuilder(privilege) {
+            let sb = "";
+            for (const k in privilegeMap) {
+                const v = privilegeMap[k];
+                if ((privilege & k) !== 0) {
+                    sb += `<input type="checkbox" name="privilege" checked value="${k}">${v}`;
+                } else {
+                    sb += `<input type="checkbox" name="privilege" value="${k}">${v}`;
+                }
+            }
+            return sb;
+        }
+
+        function stockGidBuilder(goods, gid) {
+            let sb = gid !== undefined ? "" : `<option selected></option>`;
+            for (const item of goods) {
+                if (item.id === gid) {
+                    sb += `<option value="${item.id}" selected>${item.name}</option>`;
+                } else {
+                    sb += `<option value="${item.id}">${item.name}</option>`;
+                }
+            }
+            return `<select name="gid">${sb}</select>`;
+        }
+
+        function saveUser(isAdd = false) {
+            const parent = event.target.closest("tr");
+            const id = parent.querySelector("[name='id']")?.value;
+            const username = parent.querySelector("[name='username']").value;
+            const password = parent.querySelector("[name='password']").value;
+            const privilege = getPrivilegeValue(parent.querySelectorAll("[name='privilege']"));
+            if (isAdd) {
+                post("/api/users", {
+                    username,
+                    password,
+                    privilege,
+                }).then(_ => loadView());
+            } else {
+                put("/api/users", {
+                    id,
+                    username,
+                    password,
+                    privilege,
+                }).then(_ => loadView());
+            }
+        }
+
+        function saveGoods(isAdd = false) {
+            const parent = event.target.closest("tr");
+            const id = parent.querySelector("[name='id']")?.value;
+            const name = parent.querySelector("[name='name']").value;
+            if (isAdd) {
+                post("/api/goods", {
+                    name,
+                }).then(_ => loadView());
+            } else {
+                put("/api/goods", {
+                    id,
+                    name,
+                }).then(_ => loadView());
+            }
+        }
+
+        function saveStock(isAdd = false) {
+            const parent = event.target.closest("tr");
+            const id = parent.querySelector("[name='id']")?.value;
+            const gid = parent.querySelector("[name='gid']").value;
+            const price = parent.querySelector("[name='price']").value;
+            const amount = parent.querySelector("[name='amount']").value;
+            if (isAdd) {
+                post("/api/stock", {
+                    gid,
+                    price,
+                    amount,
+                }).then(_ => loadView());
+            } else {
+                put("/api/stock", {
+                    id,
+                    gid,
+                    price,
+                    amount,
+                }).then(_ => loadView());
+            }
+        }
+
+        function drop(url) {
+            del(url)
+                .then(_ => loadView());
+        }
+
+        function login() {
+            const parent = event.target.closest("table");
+            const username = parent.querySelector("[name='username']").value;
+            const password = parent.querySelector("[name='password']").value;
+            post("/api/auth/login", {
+                username,
+                password,
+            }).then(data => {
+                currUser = data;
+                loadView();
+            });
+        }
+
+        function logout() {
+            post("/api/auth/logout")
+                .then(_ => {
+                    currUser = null;
+                    loadView();
+                });
+        }
+
+        function changePassword() {
+            const parent = event.target.closest("table");
+            const password = parent.querySelector("[name='password']").value;
+            post("/api/auth/change-password", {
+                password,
+            }).then(_ => {
+                currUser = null;
+                loadView();
+            });
+        }
+
+        function post(url, data) {
+            return fetchTemplate(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json; charset=utf-8" },
+                body: JSON.stringify(data),
+            });
+        }
+
+        function del(url) {
+            return fetchTemplate(url, {
+                method: "DELETE",
+            });
+        }
+
+        function put(url, data) {
+            return fetchTemplate(url, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json; charset=utf-8" },
+                body: JSON.stringify(data),
+            });
+        }
+
+        function get(url) {
+            return fetchTemplate(url, {
+                method: "GET",
+            });
+        }
+
+        function fetchTemplate(url, init) {
+            console.log(init.method, url, init.body);
+            return fetch(url, init)
+                .then(response => response.json())
+                .then(json => {
+                    console.log(json);
+                    if (json.code !== 200) {
+                        alert(json.msg);
+                        throw new Error(json.msg);
+                    }
+                    return json.data;
+                });
+        }
+    </script>
+</body>
+
+</html>
