@@ -221,3 +221,40 @@ function Ollama-CLI {
     $split = $opt -split "\s+", 2
     ollama $op $split[0]
 }
+
+function Create-OllamaModelsLink {
+    param (
+        [ValidateNotNullOrEmpty()] [string]$ollamaDir = "$env:USERPROFILE\.ollama\models",
+        [ValidateNotNullOrEmpty()] [string]$outputDir = "$env:USERPROFILE\.lmstudio\models\ollama"
+    )
+
+    Remove-Item -Recurse -ErrorAction SilentlyContinue $outputDir | Out-Null
+    New-Item -Type Directory $outputDir | Out-Null
+
+    $manifestDir = "$ollamaDir\manifests"
+    $blobDir = "$ollamaDir\blobs"
+    
+    $manifestLocations = Get-ChildItem -File -Recurse $manifestDir
+
+    foreach ($manifest in $manifestLocations)  {
+        $json = Get-Content $manifest | ConvertFrom-Json
+
+        foreach ($layer in $json.layers) {
+            if ($layer.mediaType -like "*model") {
+                $modelFile = $layer.digest.Replace(':', '-')
+            }
+        }
+
+        $modelConfigFile = "$blobDir\$($json.config.digest.Replace(':', '-'))"
+        $modelConfig = Get-Content -Path $modelConfigFile | ConvertFrom-Json
+        $modelName = $manifest.Directory.Name
+        $modelTag = $manifest.Name
+
+        $modelDir = "$outputDir\$modelName"
+        New-Item -Type Directory -ErrorAction SilentlyContinue $modelDir | Out-Null
+
+        $linkName = "$modelName-$modelTag.$($modelConfig.model_format)"
+        New-Item -ItemType SymbolicLink "$modelDir\$linkName" -Value "$blobDir\$modelFile" | Out-Null
+        Write-Host "$modelFile -> $linkName"
+    }
+}
