@@ -1,18 +1,17 @@
 (
-    'qwen2.5:1.5b-instruct-q4_K_M',
-    'qwen2.5:1.5b-instruct-q8_0',
-    'qwen2.5:1.5b-instruct-fp16',
-    'qwen2.5:7b-instruct-q4_K_M',
-    'qwen2.5-coder:1.5b-instruct-q4_K_M',
-    'qwen2.5-coder:7b-instruct-q4_K_M',
-    'deepseek-r1:1.5b-qwen-distill-q4_K_M',
-    'deepseek-r1:7b-qwen-distill-q4_K_M',
-    'deepseek-coder-v2:16b-lite-instruct-q4_0',
-    'gemma3:4b-it-q4_K_M',
-    'nomic-embed-text:137m-v1.5-fp16',
-    'bge-m3:567m-fp16',
-    'qllama/bge-reranker-v2-m3:f16'
+    'qwen2.5:7b',
+    'qwen2.5-coder:1.5b',
+    'qwen2.5-coder:7b',
+    'deepseek-r1:7b',
+    'deepseek-coder-v2:16b',
+    'huihui_ai/qwen2.5-1m-abliterated:7b',
+    'huihui_ai/qwen2.5-coder-abliterate:1.5b',
+    'huihui_ai/qwen2.5-coder-abliterate:7b',
+    'huihui_ai/deepseek-r1-abliterated:7b',
+    'qllama/bce-embedding-base_v1:q4_k_m',
+    'qllama/bce-reranker-base_v1:q4_k_m'
 ) | % {
+    $_
     ollama pull $_
 }
 
@@ -21,3 +20,5 @@
 # }
 
 ollama list
+
+Create-OllamaModelsLink
