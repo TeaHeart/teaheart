@@ -1,9 +1,13 @@
 # 创建modelfile文件并写入一些参数
+$exclude = @("NAME", "teaheart*", "*embedding*", "*reranker*")
+
 ollama list | % {
     $name = ($_ -split "\s+",2)[0]
-    
-    if ($name -like "NAME" -or $name -like "teaheart*") {
-        return
+
+    foreach ($item in $exclude) {
+        if ($name -like $item) { 
+            return
+        }
     }
 
     $sb = [System.Text.StringBuilder]::new()
@@ -18,5 +22,8 @@ ollama list | % {
     $temp = $name -like "*coder*" ? "PARAMETER temperature 0" : ""
     $filename = $pureName.Replace(":", "@")
     $modelfile = $sb -f $name, $temp
-    $modelfile > "./def/$filename"
+    $dest = "./def/$filename"
+    if (!(Test-Path $dest)) {
+        $modelfile > $dest
+    }
 }
