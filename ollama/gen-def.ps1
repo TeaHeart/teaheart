@@ -13,7 +13,7 @@ ollama list | % {
     $sb = [System.Text.StringBuilder]::new()
     $sb.AppendLine("FROM {0}") > $null
     $sb.AppendLine() > $null
-    $sb.AppendLine("PARAMETER num_gpu 32") > $null
+    $sb.AppendLine("PARAMETER num_gpu 64") > $null
     $sb.AppendLine("PARAMETER num_batch 32") > $null
     $sb.Append("{1}") > $null
     $sb = $sb.ToString()
