@@ -1,0 +1,65 @@
+﻿<UserControl
+    x:Class="SimpleAdmin.Wpf.Views.WelcomeView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="clr-namespace:SimpleAdmin.Wpf.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helper="clr-namespace:SimpleAdmin.Wpf.Helpers"
+    xmlns:m="clr-namespace:SimpleAdmin.Wpf.Models"
+    xmlns:markup="clr-namespace:SimpleAdmin.Wpf.Windows.Markup"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:SimpleAdmin.Wpf.ViewModels"
+    d:Background="White"
+    d:DataContext="{d:DesignInstance Type=vm:WelcomeViewModel}"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <UserControl.DataContext>
+        <markup:Di ServiceType="{x:Type vm:WelcomeViewModel}" />
+    </UserControl.DataContext>
+
+    <UserControl.Resources>
+        <markup:EnumValues x:Key="GenderValues" EnumType="{x:Type m:Gender}" />
+        <markup:EnumValues
+            x:Key="HobbyValues"
+            EnumType="{x:Type m:Hobby}"
+            ExcludeValues="{x:Static m:Hobby.None}" />
+        <conv:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+    </UserControl.Resources>
+
+    <StackPanel>
+        <Label Content="{Binding Now}" ContentStringFormat="欢迎, 现在是: {0:yyyy-MM-dd HH:mm:ss.fff}" />
+        <Button
+            d:Content="0"
+            Command="{Binding IncrementCounterCommand}"
+            Content="{Binding Counter}"
+            ContentStringFormat="计数为: {0}" />
+        <StackPanel Orientation="Horizontal">
+            <Label Content="性别" />
+            <ComboBox
+                d:SelectedItem="{x:Static m:Gender.None}"
+                ItemsSource="{Binding Source={StaticResource GenderValues}}"
+                SelectedItem="{Binding Gender}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label Content="爱好" />
+            <ListBox
+                helper:ListBoxHelper.SelectedItems="{Binding Hobbies}"
+                ItemsSource="{Binding Source={StaticResource HobbyValues}}"
+                SelectionMode="Multiple">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </StackPanel>
+        <Button Command="{Binding SubmitCommand}" Content="提交" />
+    </StackPanel>
+</UserControl>

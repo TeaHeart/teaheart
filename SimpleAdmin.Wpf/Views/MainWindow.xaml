@@ -1,0 +1,69 @@
+﻿<Window
+    x:Class="SimpleAdmin.Wpf.Views.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:markup="clr-namespace:SimpleAdmin.Wpf.Windows.Markup"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:SimpleAdmin.Wpf.ViewModels"
+    Title="MainWindow"
+    Width="1280"
+    Height="720"
+    d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <Window.DataContext>
+        <markup:Di ServiceType="{x:Type vm:MainViewModel}" />
+    </Window.DataContext>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="200" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <GridSplitter
+            Grid.Row="0"
+            Grid.RowSpan="3"
+            Grid.Column="1"
+            Width="10"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Background="Transparent"
+            ResizeBehavior="PreviousAndNext" />
+
+        <GridSplitter
+            Grid.Row="1"
+            Grid.Column="2"
+            Height="10"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Background="Transparent"
+            ResizeBehavior="PreviousAndNext" />
+
+        <ContentControl
+            Grid.Row="0"
+            Grid.RowSpan="3"
+            Grid.Column="0"
+            Margin="5"
+            Content="{Binding MenuView}" />
+
+        <ContentControl
+            Grid.Row="0"
+            Grid.Column="2"
+            Margin="5"
+            Content="{Binding TabContentView}" />
+
+        <ContentControl
+            Grid.Row="2"
+            Grid.Column="2"
+            Margin="5"
+            Content="{Binding LogView}" />
+    </Grid>
+</Window>
