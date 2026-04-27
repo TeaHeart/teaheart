@@ -9,7 +9,7 @@
         aria-labelledby="descId"
       >
         <title id="titleId">TeaHeart &#30340; GitHub &#32479;&#35745;&#25968;&#25454;, Rank: C</title>
-        <desc id="descId">获标星数: 3, 累计提交总数  (去年) : 163, 发起的 PR 总数: 0, 提出的 issue 总数: 0, 贡献的项目数（去年）: 0</desc>
+        <desc id="descId">获标星数: 3, 累计提交总数  (去年) : 159, 发起的 PR 总数: 0, 提出的 issue 总数: 0, 贡献的项目数（去年）: 0</desc>
         <style>
           .header {
             font: 600 18px 'Segoe UI', Ubuntu, Sans-Serif;
@@ -73,7 +73,7 @@
         stroke-dashoffset: 251.32741228718345;
       }
       to {
-        stroke-dashoffset: 231.3548383803195;
+        stroke-dashoffset: 231.65212335619643;
       }
     }
   
@@ -177,7 +177,7 @@
         x="219.01"
         y="12.5"
         data-testid="commits"
-      >163</text>
+      >159</text>
     </g>
   </g><g transform="translate(0, 50)">
     <g class="stagger" style="animation-delay: 750ms" transform="translate(25, 0)">
